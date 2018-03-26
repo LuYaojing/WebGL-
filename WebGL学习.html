@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<head>
+	<title>WebGL学习</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+	<style id="全局样式">
+		body {
+			/* background-color: #DDDDDD; */
+			margin: 0px; /* white-space: nowrap; */
+		}
+
+
+		div#按钮列 {
+			top: 50px;
+			left: 5px;
+			position: fixed;
+		}
+
+		svg#线条 {
+			top: 0px;
+			left: 0px;
+			position: absolute;
+		}
+
+		div#即时信息 {
+			background-color: rgba(180, 180, 180, 0.8);
+		}
+
+		canvas#画布 {
+			/* box-sizing:border-box; */
+			border-width: 0px;
+			border-color: rgb(80, 80, 80);
+			border-style: solid; /* border-radius: 50%; */
+			background-color: rgba(180, 180, 180, 0.8);/*  opacity:0.8; */
+			position: absolute; /* left: 0px; */
+			/* top: 0px; */
+			width: 100%;
+			height: 100%; /* z-index: 4; */
+		}
+
+		canvas#显示画布 {
+			box-sizing: border-box;
+			border-width: 0px;
+			border-color: rgb(80, 80, 80);
+			border-style: solid;
+			top: 1000px;
+			left: 0px;
+			position: absolute;
+		}
+	</style>
+
+</head>
+
+<body>
+
+	<!-- img src="图像处理/跳一跳.png" -->
+	<div id="绘图容器">
+		<canvas id="画布"></canvas>
+		<svg id="线条" width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+
+			<line id="线段1" x1="0" y1="0" x2="300" y2="300" style="stroke:rgba(255,255,255,255);stroke-width:1" />
+
+		</svg>
+	</div>
+
+	<div id="按钮列">
+		<button id="运行" type="button">运行</button>
+		<button id="生成" type="button">绘制</button>
+		<button id="启停" type="button">启动</button>
+		<button id="保存" type="button">保存图像</button>
+
+		<div id="即时信息"></div>
+		<div id="状态"></div>
+
+	</div>
+
+	<canvas id="显示画布"></canvas>
+
+
+	<script src="stats.min.js"></script>
+	<script src="WebGL学习.js"></script>
+
+	<script>
+		var 纹理创建数 = 0;
+		var 纹理销毁数 = 0;
+		var 帧缓冲创建数 = 0;
+		var 帧缓冲销毁数 = 0;
+		var 信息, 结果图像;
+		var 弧度到度 = 180 / Math.PI;
+		var 上下文 = 画布.getContext('2d');
+		var img = new Image(), 待处理画布 = document.createElement('canvas');
+		var 待处理上下文 = 待处理画布.getContext('2d');
+		img.src = '图像处理/Mapleleaf_ZH-CN9491310356_1920x1080[1].jpg'; //跳一跳.png Mapleleaf_ZH-CN9491310356_1920x1080[1].jpg untitled.png Lena原图.png 1520822497288.jpg
+		//OlomoucClock_ZH-CN14494749598_1920x1080.jpg 线条.png 1085343-20170424223432225-596215935.png 细线1像素.png 多极测试.jpg
+		stats = new Stats();
+		状态.appendChild(stats.dom);
+		var a = 0, start = window.performance.now();
+		var 循环 = false;
+
+		function 动画() {
+			if (!循环) return;
+			a++;
+			if (a >= 100) {
+				a = 0;
+				即时信息.innerHTML = (window.performance.now() - start) / 100;
+				start = window.performance.now();
+			}
+			图像处理.处理(待处理画布);
+			stats.update();
+			on生成();
+
+			window.requestAnimationFrame(动画);
+		}
+
+
+		function 浮点数据到图像(数据, 宽, 高) {
+
+			let 图像 = new Uint8ClampedArray(宽 * 高 * 4);
+
+			let 长度 = 数据.length / 4;
+			for (let i = 0; i < 长度; i++) {
+				let l = i * 4;
+				图像[l] = 数据[l] * 255;
+
+				l++;
+				if (数据[l] < 0)
+					图像[l] = (数据[l] + Math.PI) / (Math.PI) * 255
+				else
+					图像[l] = (数据[l]) / (Math.PI) * 255;
+
+				l++;
+				if (数据[l] < 0)
+					图像[l] = (数据[l] + Math.PI) / (Math.PI) * 255
+				else
+					图像[l] = (数据[l]) / (Math.PI) * 255;
+
+				l++;
+				图像[l] = 255;
+			}
+
+			return new ImageData(图像, 宽, 高);
+
+		}
+
+
+		运行.addEventListener('click', function (ev) {
+
+			let w = img.width, h = img.height;
+			if (w < h) {
+				if (h > 2046) {
+					待处理画布.height = 2046;
+					待处理画布.width = 2046 / h * w;
+				}
+				else {
+					待处理画布.width = w;
+					待处理画布.height = h;
+				}
+			}
+			else {
+				if (w > 2046) {
+					待处理画布.height = 2046 / w * h;
+					待处理画布.width = 2046;
+				}
+				else {
+					待处理画布.width = w;
+					待处理画布.height = h;
+				}
+			}
+
+			待处理上下文.drawImage(img, 0, 0, w, h, 0, 0, 待处理画布.width, 待处理画布.height);
+
+			图像处理.运行(待处理画布, (获取图像) => {
+				setTimeout(() => {
+					let start = window.performance.now();
+					let 结果 = 获取图像('', true, false);
+					结果 = 浮点数据到图像(结果, 待处理画布.width, 待处理画布.height);
+					if (结果 instanceof ImageData) {
+
+						画布.width = 结果.width;
+						画布.height = 结果.height;
+
+						画布.style.width = 结果.width + 'px';
+						画布.style.height = 结果.height + 'px';
+
+						线条.width.baseVal.value = 结果.width;
+						线条.height.baseVal.value = 结果.height;
+
+						线条.style.width = 结果.width + 'px';
+						线条.style.height = 结果.height + 'px';
+
+						上下文.putImageData(结果, 0, 0);
+
+					}
+					else {
+						console.log('图像处理没能返回结果。');
+					}
+
+					信息 = 获取图像('第三块', true, false);
+					if (信息 instanceof Float32Array) {
+
+						console.log('第三块x:' + 信息[0]);
+						console.log('第三块y:' + 信息[1]);
+						console.log('第三块z:' + 信息[2]);
+						console.log('第三块w:' + 信息[3]);
+					}
+					else {
+						console.log('图像处理没能返回结果。');
+					}
+					console.log(window.performance.now() - start, '图像处理.运行;');
+				}, 0);
+
+			});
+
+			console.log('纹理创建数:', 纹理创建数);
+			console.log('纹理销毁数:', 纹理销毁数);
+			console.log('帧缓冲创建数:', 帧缓冲创建数);
+			console.log('帧缓冲销毁数:', 帧缓冲销毁数);
+
+		});
+
+		生成.addEventListener('click', on生成, false);
+		function on生成(ev) {
+			let start = window.performance.now();
+
+			图像处理.绘制((获取图像) => {
+				//let 结果图像 = 获取图像('第三块', true, true);//第三块
+				let 图像 = new Uint8ClampedArray(待处理画布.width * 待处理画布.height * 4);
+
+				let 长度 = 信息.length / 4;
+				for (let i = 0; i < 长度; i++) {
+					let l = i * 4;
+					/*
+					图像[ l ] = (信息[ l ]+Math.PI)/(2*Math.PI) * 255;
+					l++;
+					图像[ l ] = (信息[ l ]+Math.PI)/(2*Math.PI) * 255;
+					l++;
+					图像[ l ] = (信息[ l ]+Math.PI)/(2*Math.PI) * 255;
+					*/
+					if (信息[l] < 0)
+						图像[l] = (信息[l] + Math.PI) / (Math.PI) * 255
+					else
+						图像[l] = (信息[l]) / (Math.PI) * 255;
+
+					l++;
+					if (信息[l] < 0)
+						图像[l] = (信息[l] + Math.PI) / (Math.PI) * 255
+					else
+						图像[l] = (信息[l]) / (Math.PI) * 255;
+
+					l++;
+					if (信息[l] < 0)
+						图像[l] = (信息[l] + Math.PI) / (Math.PI) * 255
+					else
+						图像[l] = (信息[l]) / (Math.PI) * 255;
+
+					l++;
+					图像[l] = 255;
+				}
+
+				let 结果 = 获取图像('', true, false);
+				上下文.drawImage(显示画布, 0, 0);
+				//let 结果 = new ImageData( 图像, 待处理画布.width, 待处理画布.height );
+
+				//结果 = 浮点数据到图像( 结果, 待处理画布.width, 待处理画布.height );
+
+				if (结果 instanceof ImageData) {
+
+					画布.width = 结果.width;
+					画布.height = 结果.height;
+
+					画布.style.width = 结果.width + 'px';
+					画布.style.height = 结果.height + 'px';
+
+					线条.width.baseVal.value = 结果.width;
+					线条.height.baseVal.value = 结果.height;
+
+					//上下文.putImageData(结果,0,0);
+					//上下文.drawImage(显示画布, 0, 0);
+
+
+				}
+				else {
+					//console.log('图像处理没能返回结果。');
+				}
+
+			});
+
+			console.log(window.performance.now() - start, '图像处理.绘制();');
+		}
+
+		线条.addEventListener('mousemove', function (ev) {
+
+			if (信息 instanceof Float32Array) {
+
+				let w = 画布.width;
+				let h = 画布.height;
+				let l = w * ev.offsetY * 4 + ev.offsetX * 4;
+				即时信息.innerHTML = 'x:' + ev.offsetX + '; y:' + ev.offsetY + ';<br>' +
+					'第三块x:' + 信息[l] + '<br>' + //Math.round(信息[l]*弧度到度)+'度<br>'
+					'第三块y:' + 信息[l + 1] + '<br>' +
+					'第三块z:' + 信息[l + 2] + '<br>' +
+					'第三块w:' + Math.round(信息[l + 3] * 弧度到度) + '度<br>';
+
+				let 半径 = 画布.width;
+				let 夹角 = 信息[l + 1] + Math.PI / 2;
+				线段1.x2.baseVal.value = ev.offsetX + 半径 * Math.cos(夹角);
+				线段1.y2.baseVal.value = ev.offsetY + 半径 * Math.sin(夹角);
+				线段1.x1.baseVal.value = ev.offsetX - 半径 * Math.cos(夹角);
+				线段1.y1.baseVal.value = ev.offsetY - 半径 * Math.sin(夹角);
+
+				if (信息[l] !== 0) {
+					线段1.style.stroke = "rgba(255,255,128,1)";
+				}
+				else {
+					线段1.style.stroke = "rgba(255,255,128,0.1)";
+				}
+			}
+
+		});
+
+		启停.addEventListener('click', function (ev) {
+
+			if (循环) {
+				循环 = false;
+				启停.innerText = '启动';
+			}
+			else {
+				循环 = true;
+				启停.innerText = '停止';
+			}
+			动画();
+
+		}, 0);
+
+		保存.addEventListener('click', function (ev) {
+
+			画布.toBlob((blob) => {
+				window.open(URL.createObjectURL(blob));
+			}, "image/png");
+
+		}, 0);
+
+	</script>
+
+
+</body>

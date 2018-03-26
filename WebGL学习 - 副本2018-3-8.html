@@ -1,0 +1,137 @@
+<!DOCTYPE html>  
+<head>  
+    <title>WebGL学习</title>  
+	 <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />  
+	<style id="全局样式">
+		body{
+			//background-color: #DDDDDD;
+			margin: 0px;
+			//white-space: nowrap;
+		}
+		
+		
+		div#按钮列 {
+				top:10px;
+				left:10px;
+				position:absolute;
+		}
+		
+		div#即时信息 {
+				background-color: rgba(180, 180, 180, 0.8);
+		}
+		
+		canvas#画布 {
+			box-sizing:border-box;
+			border-width: 3px;
+			border-color: rgb(80, 80, 80);
+			border-style: solid;
+			//border-radius: 50%;
+			background-color: rgba(180, 180, 180, 0.8);
+			//opacity:0.8;
+			position: absolute;
+			//left: 0px;
+			//top: 0px;
+			width: 100%;
+			height: 100%;
+			//z-index: 4;
+		}
+	</style>
+	
+</head>  
+<body>  
+ 
+	<!--img src="图像处理/跳一跳.png"-->
+
+  <canvas id='画布'></canvas>
+  
+  <div id = "按钮列">
+		<button id = "生成" type = "button" >绘制</button>
+
+		<div id = "即时信息"></div>
+	</div>
+  
+  
+  <!--script src="gl-matrix.js"></script-->
+  <script src="WebGL学习.js"></script>
+  
+  <script>
+		var 信息;
+		var 上下文 = 画布.getContext('2d');
+		图像处理.运行('图像处理/跳一跳.png',(获取图像)=>{//跳一跳.png Mapleleaf_ZH-CN9491310356_1920x1080[1].jpg
+					let 结果 = 获取图像('', true, true);
+					if ( 结果 instanceof ImageData ){
+					
+						画布.width = 结果.width;
+						画布.height = 结果.height;
+						
+						画布.style.width = 结果.width + 'px';
+						画布.style.height = 结果.height + 'px';
+								
+						上下文.putImageData(结果,0,0);
+						
+					}
+					else{
+						console.log('图像处理没能返回结果。');
+					}
+					
+					信息 = 获取图像('第三块', true, false);
+					if ( 信息 instanceof Float32Array ){
+					
+						console.log('第三块x:'+信息[200000]);
+						console.log('第三块y:'+信息[200000+1]);
+						console.log('第三块z:'+信息[200000+2]);
+						console.log('第三块w:'+信息[200000+3]);
+					}
+					else{
+						console.log('图像处理没能返回结果。');
+					}
+		
+				});
+		
+		生成.addEventListener( 'click', function ( ev ){
+	let start = window.performance.now();
+			
+		图像处理.绘制((获取图像)=>{
+				let 结果 = 获取图像('第二块', true, true);
+				if ( 结果 instanceof ImageData ){
+				
+					画布.width = 结果.width;
+					画布.height = 结果.height;
+					
+					画布.style.width = 结果.width + 'px';
+					画布.style.height = 结果.height + 'px';
+							
+					上下文.putImageData(结果,0,0);
+					
+				}
+				else{
+					console.log('图像处理没能返回结果。');
+				}
+	
+			});
+				
+	console.log(window.performance.now()-start,'图像处理.绘制();');
+		}, false );
+		
+				
+		画布.addEventListener( 'mousemove', function ( ev ){
+		
+			if ( 信息 instanceof Float32Array ){
+			
+				let w = 画布.width;
+				let h = 画布.height;
+				let l = w * ev.y * 4 + ev.x * 4;
+				即时信息.innerHTML = '第三块x:'+信息[l]+'<br>'+
+									 '第三块y:'+信息[l+1]+'<br>'+
+									 '第三块z:'+信息[l+2]+'<br>'+
+									 '第三块w:'+信息[l+3]+'<br>';
+			}
+		
+		});
+		
+  </script>
+
+
+</body>  
+

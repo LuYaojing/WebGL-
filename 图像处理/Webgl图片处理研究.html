@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+    <meta name="Viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1" >
+	<title>Webgl图片处理研究</title>
+	<style id="全局样式">
+		body{
+			background-color: #DDDDDD;
+			margin: 0px;
+		}
+		
+		div#按钮列 {
+				top:10px;
+				left:10px;
+				position:absolute;
+		}
+		
+		div#渲染器容器 {
+			box-sizing:border-box;
+			border-width: 3px;
+			border-color: rgb(80, 80, 80);
+			border-style: solid;
+			//border-radius: 50%;
+			background-color: rgba(180, 180, 180, 0.8);
+			//opacity:0.8;
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+			//z-index: 4;
+		}
+		
+	</style>
+	<script src="three83.js"></script>
+	<script src="Stats.js"></script>
+</head>
+<body>
+		<div id = "渲染器容器">
+			<canvas id='画布'></canvas>
+		</div>
+		
+		<div id = "按钮列">
+			<button id = "生成" type = "button" >生成</button>
+
+			<div id = "即时信息"></div>
+		</div>
+	
+	
+	<script>
+	
+		var scene, renderer;
+		var camera, stats, domElement = {};
+		
+		//一致化变量
+
+		var uniforms = {
+			texture:   { value: new THREE.TextureLoader().load( "跳一跳.png" ) },
+		};
+
+		//顶点着色器
+		var vertexShader = `
+		
+			varying vec2 vUv;
+			varying float vNumber;
+
+			void main()	{
+			
+				vUv = uv;
+			
+				gl_Position =  vec4( position, 1.0 );
+
+			}
+			
+		`;
+		//projectionMatrix * modelViewMatrix *
+		
+		//片元着色器
+		var fShaderVar = `
+		
+			uniform sampler2D texture;
+			
+			varying vec2 vUv;
+			
+			void main(void)
+			{
+	
+				
+				gl_FragColor = texture2D( texture, vUv );
+				
+	
+			}
+			
+		`;
+		//gl_FragColor = vec4(1.0,1.0,0.0,1.0);
+		
+		var shaderMaterial = new THREE.ShaderMaterial( {
+			
+			
+			uniforms: 		uniforms,
+			vertexShader:   vertexShader,
+			fragmentShader: fShaderVar,
+			side: 			THREE.DoubleSide,
+			//wireframe: 		true,
+			//transparent:	true,
+			//depthTest: 		false
+			//alphaTest:		0.0,
+			//opacity:		0.5,
+			//depthWrite:		false,
+		});
+		
+		
+		init();
+		animate();
+
+		function init() {
+		
+			domElement.offsetWidth = 渲染器容器.offsetWidth;
+			domElement.offsetHeight = 渲染器容器.offsetHeight;
+			
+			renderer = new THREE.WebGLRenderer({canvas:画布, alpha:true});
+			//if (!renderer.setScissorTest) renderer.setScissorTest = renderer.enableScissorTest;
+			renderer.setPixelRatio( window.devicePixelRatio);
+			//renderer.setSize( 1920, 1080 );
+			
+			//renderer.autoClear = false;
+
+			//
+			//var 渲染大小 = renderer.getSize ();
+			camera = new THREE.OrthographicCamera( -domElement.offsetWidth / 2, domElement.offsetWidth / 2, domElement.offsetHeight / 2, -domElement.offsetHeight / 2, 10, 1000 );
+				
+			camera.position.z=500;
+			
+			scene = new THREE.Scene();
+			
+			geometry = new THREE.PlaneBufferGeometry( 2, 2 );
+;
+			//geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+			//geometry.addAttribute( 'posoffset', new THREE.BufferAttribute( offsets, 3 ) );
+			//geometry.addAttribute( 'number', new THREE.BufferAttribute( number, 1 ) );
+			//var uv = new Float32Array( [0,0, 0,1, 1,1, 1,0] );
+			//geometry.addAttribute( 'uv', new THREE.BufferAttribute( uv, 2 ) );
+			var Mesh=new THREE.Mesh( geometry, shaderMaterial);//new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} ));
+//shaderMaterial );
+			scene.add(Mesh);
+			
+			onWindowResize();
+			
+			window.addEventListener( 'resize', onWindowResize, false );
+
+		}
+		
+			
+		生成.addEventListener( 'click', function ( ev ){
+			渲染();
+		}, false );
+			
+
+		function onWindowResize() {
+			
+			domElement.offsetWidth = 渲染器容器.offsetWidth;
+			domElement.offsetHeight = 渲染器容器.offsetHeight;
+
+			camera.left = -domElement.offsetWidth / 2;
+			camera.right = domElement.offsetWidth / 2;
+			camera.top = domElement.offsetHeight / 2;
+			camera.bottom = -domElement.offsetHeight / 2;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize( domElement.offsetWidth, domElement.offsetHeight );
+		
+
+		}
+		
+		
+		function animate(){
+			//stats.update();
+			//trackball.update();
+			渲染();
+			//requestAnimationFrame(animate);
+		};
+		//animate();
+		
+		function 渲染(){			
+				
+				renderer.render( scene, camera );
+		}
+		
+
+	</script>
+	
+</body>
+</html>

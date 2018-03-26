@@ -1,0 +1,65 @@
+<!DOCTYPE html>  
+<head>  
+    <title>WebGL学习</title>  
+	 <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />  
+	<style id="全局样式">
+		body{
+			//background-color: #DDDDDD;
+			margin: 0px;
+			//white-space: nowrap;
+		}
+		
+		
+		div#按钮列 {
+				top:10px;
+				left:10px;
+				position:absolute;
+		}
+		
+		canvas#画布 {
+			box-sizing:border-box;
+			border-width: 3px;
+			border-color: rgb(80, 80, 80);
+			border-style: solid;
+			//border-radius: 50%;
+			background-color: rgba(180, 180, 180, 0.8);
+			//opacity:0.8;
+			position: absolute;
+			//left: 0px;
+			//top: 0px;
+			width: 100%;
+			height: 100%;
+			//z-index: 4;
+		}
+	</style>
+	
+</head>  
+<body>  
+ 
+	<!--img src="图像处理/跳一跳.png"-->
+
+  <canvas id='画布'></canvas>
+  
+  <div id = "按钮列">
+		<button id = "生成" type = "button" >绘制</button>
+
+		<div id = "即时信息"></div>
+	</div>
+  
+  
+  <script src="gl-matrix.js"></script>
+  <script src="WebGL学习.js"></script>
+  
+  <script>
+		图像处理.运行(画布);
+		  
+		生成.addEventListener( 'click', function ( ev ){
+			图像处理.绘制();
+		}, false );
+		
+  </script>
+
+
+</body>  
+
