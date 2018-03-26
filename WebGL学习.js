@@ -3633,11 +3633,45 @@ var 图像处理 = (function () {
 		let 高斯数列=生成正态分布数列(模糊半径);
 		let 临时图像 = new Uint8ClampedArray(宽 * 高 * 4);
 		let 数据 = 图片.data;
+		let 半径=(高斯数列.length-1)/2;
+		let b=高斯数列[半径];
 		for(let i=0;i<宽;i++){
 			for(let j=0;j<高;j++){
-				
-				for (let k=0,l=(高斯数列.length-1)/2;k<l;K++){
-					
+				let a=(j*宽+i)*4;
+				let a0=a;
+				数据[a]=临时图像[a]*b;
+				a++;
+				let a1=a;
+				数据[a]=临时图像[a]*b;
+				a++;
+				let a2=a;
+				数据[a]=临时图像[a]*b;
+				a++;
+				let a3=a;
+				数据[a]=临时图像[a]*b;
+				for (let k=0;k<半径;K++){
+					let w=半径-k;
+					let w0=i-w;
+					let w1=i+w;
+					if (w0<0)w0=0;
+					if(w1>=宽)w1=宽-1;
+					let w0=(j*宽+w0)*4;
+					let w1=(j*宽+w1)*4;
+					let c=高斯数列[k];
+					数据[a0]+=临时图像[w0]*c;
+					数据[a0]+=临时图像[w1]*c;
+					w0++;
+					w1++;
+					数据[a1]+=临时图像[w0]*c;
+					数据[a1]+=临时图像[w1]*c;
+					w0++;
+					w1++;
+					数据[a2]+=临时图像[w0]*c;
+					数据[a2]+=临时图像[w1]*c;
+					w0++;
+					w1++;
+					数据[a3]+=临时图像[w0]*c;
+					数据[a3]+=临时图像[w1]*c;
 				}
 			}
 		}
