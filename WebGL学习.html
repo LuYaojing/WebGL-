@@ -188,6 +188,10 @@
 
 						线条.style.width = 结果.width + 'px';
 						线条.style.height = 结果.height + 'px';
+						
+						let start = window.performance.now();
+						结果=图像处理.高斯模糊(结果,2);
+						console.log(window.performance.now() - start, '结果=图像处理.高斯模糊(结果,2);');
 
 						上下文.putImageData(结果, 0, 0);
 

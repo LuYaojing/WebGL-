@@ -2734,7 +2734,7 @@ var 图像处理 = (function () {
 							程序信息.设置本地一致变量('uCoreRight', [1, 2, 1], '3f');
 
 					}
-					
+
 					绘图区.更改尺寸(宽, 高);
 					绘图区.添加画板(new 纹理类(this, null, 选项), 1);
 					canny = true;
@@ -3620,61 +3620,111 @@ var 图像处理 = (function () {
 		return 数列;
 
 	}
-	
+
 	function 高斯模糊(图片, 模糊半径) {
-		
-		if (!(图片 instanceof ImageData)){
+
+		if (!(图片 instanceof ImageData)) {
 			console.warn('“图像”参数必须是“ImageData”对象！');
 			return false;
 		}
-		
-		let 宽=图片.width;
-		let 高=图片.height;
-		let 高斯数列=生成正态分布数列(模糊半径);
-		let 临时图像 = new Uint8ClampedArray(宽 * 高 * 4);
-		let 数据 = 图片.data;
-		let 半径=(高斯数列.length-1)/2;
-		let b=高斯数列[半径];
-		for(let i=0;i<宽;i++){
-			for(let j=0;j<高;j++){
-				let a=(j*宽+i)*4;
-				let a0=a;
-				数据[a]=临时图像[a]*b;
+
+		let 宽 = 图片.width;
+		let 高 = 图片.height;
+		let 高斯数列 = 生成正态分布数列(模糊半径);
+		let 数据 = new Uint8ClampedArray(宽 * 高 * 4);
+		let 临时图像 = 图片.data;
+		let 半径 = (高斯数列.length - 1) / 2;
+		let b = 高斯数列[半径];
+
+		//水平模糊
+		for (let j = 0; j < 高; j++) {
+			let d = j * 宽;
+			for (let i = 0; i < 宽; i++) {
+				let a = (d + i) * 4;
+				let a0 = a;
+				数据[a] = 临时图像[a] * b;
 				a++;
-				let a1=a;
-				数据[a]=临时图像[a]*b;
+				let a1 = a;
+				数据[a] = 临时图像[a] * b;
 				a++;
-				let a2=a;
-				数据[a]=临时图像[a]*b;
+				let a2 = a;
+				数据[a] = 临时图像[a] * b;
 				a++;
-				let a3=a;
-				数据[a]=临时图像[a]*b;
-				for (let k=0;k<半径;K++){
-					let w=半径-k;
-					let w0=i-w;
-					let w1=i+w;
-					if (w0<0)w0=0;
-					if(w1>=宽)w1=宽-1;
-					let w0=(j*宽+w0)*4;
-					let w1=(j*宽+w1)*4;
-					let c=高斯数列[k];
-					数据[a0]+=临时图像[w0]*c;
-					数据[a0]+=临时图像[w1]*c;
+				let a3 = a;
+				数据[a] = 临时图像[a] * b;
+				for (let k = 0; k < 半径; k++) {
+					let w = 半径 - k;
+					let w0 = i - w;
+					let w1 = i + w;
+					if (w0 < 0) w0 = 0;
+					if (w1 >= 宽) w1 = 宽 - 1;
+					w0 = (d + w0) * 4;
+					w1 = (d + w1) * 4;
+					let c = 高斯数列[k];
+					数据[a0] += 临时图像[w0] * c;
+					数据[a0] += 临时图像[w1] * c;
 					w0++;
 					w1++;
-					数据[a1]+=临时图像[w0]*c;
-					数据[a1]+=临时图像[w1]*c;
+					数据[a1] += 临时图像[w0] * c;
+					数据[a1] += 临时图像[w1] * c;
 					w0++;
 					w1++;
-					数据[a2]+=临时图像[w0]*c;
-					数据[a2]+=临时图像[w1]*c;
+					数据[a2] += 临时图像[w0] * c;
+					数据[a2] += 临时图像[w1] * c;
 					w0++;
 					w1++;
-					数据[a3]+=临时图像[w0]*c;
-					数据[a3]+=临时图像[w1]*c;
+					数据[a3] += 临时图像[w0] * c;
+					数据[a3] += 临时图像[w1] * c;
 				}
 			}
 		}
+
+		//垂直模糊
+		临时图像 = 数据;
+		数据 = new Uint8ClampedArray(宽 * 高 * 4);
+		for (let j = 0; j < 高; j++) {
+			let d = j * 宽;
+			for (let i = 0; i < 宽; i++) {
+				let a = (d + i) * 4;
+				let a0 = a;
+				数据[a] = 临时图像[a] * b;
+				a++;
+				let a1 = a;
+				数据[a] = 临时图像[a] * b;
+				a++;
+				let a2 = a;
+				数据[a] = 临时图像[a] * b;
+				a++;
+				let a3 = a;
+				数据[a] = 临时图像[a] * b;
+				for (let k = 0; k < 半径; k++) {
+					let w = 半径 - k;
+					let w0 = j - w;
+					let w1 = j + w;
+					if (w0 < 0) w0 = 0;
+					if (w1 >= 高) w1 = 高 - 1;
+					w0 = (w0 * 宽 + i) * 4;
+					w1 = (w1 * 宽 + i) * 4;
+					let c = 高斯数列[k];
+					数据[a0] += 临时图像[w0] * c;
+					数据[a0] += 临时图像[w1] * c;
+					w0++;
+					w1++;
+					数据[a1] += 临时图像[w0] * c;
+					数据[a1] += 临时图像[w1] * c;
+					w0++;
+					w1++;
+					数据[a2] += 临时图像[w0] * c;
+					数据[a2] += 临时图像[w1] * c;
+					w0++;
+					w1++;
+					数据[a3] += 临时图像[w0] * c;
+					数据[a3] += 临时图像[w1] * c;
+				}
+			}
+		}
+
+		return new ImageData(数据, 宽, 高);
 
 	}
 
@@ -3771,6 +3821,8 @@ var 图像处理 = (function () {
 	处理.运行 = (图像路径, 完成回调) => {
 		高斯模糊GPU(图像路径, 15, 完成回调);
 	};
+
+	处理.高斯模糊=高斯模糊;
 
 	return 处理;
 
