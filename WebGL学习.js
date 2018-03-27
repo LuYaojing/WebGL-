@@ -2818,7 +2818,7 @@ var 图像处理 = (function () {
 					Coord = vTextureCoord;
 					c = Coord.x * WpH.x * cos(a22.b) + Coord.y * WpH.y * sin(a22.b);
 					fragColor[0] = vec4( a22.r, a22.b, c, 1.0 );
-					fragColor[2] = vec4( cos(a22.b) + sin(a22.b), a22.b, c, 1.0 );
+					fragColor[2] = vec4( cos(a22.b) + sin(a22.b), a22.b, Coord.x * uToBeProcessedImageSize.x * cos(a22.b) + Coord.y * uToBeProcessedImageSize.y * sin(a22.b), 1.0 );
 				//}
 
 				fragColor[2].a = 1.0;
@@ -3290,6 +3290,18 @@ var 图像处理 = (function () {
 
 	//console.log(WebGL内部格式与源格式匹配检测(WebGL2RenderingContext.RGB,WebGL2RenderingContext.RGBA,null,1));
 
+	//function WebGL内部格式与源格式匹配检测(内部格式, 源格式, 源类型, 基准, 回传)
+	//检测内部格式、源格式与源类型（texImage2D的“internalFormat”、“format”与“type”参数）的组合是否匹配。
+	//返回一个Boolean值，如果匹配，返回“true”，不匹配返回“false”。
+	//内部格式：一个WebGL像素格式或数据类型常量；
+	//源格式：一个WebGL像素格式或数据类型常量；
+	//源类型：一个WebGL像素格式或数据类型常量；
+	//基准：值只能是0，1，2。指定是使用“内部格式, 源格式, 源类型”中的哪一个为基准进行匹配检测。
+	//回传：一个对象（回传={}），如果传递了该参数，则会把一个正确的texImage2D的“internalFormat”、“format”与“type”参数组合
+	//传递回去，格式如下：
+	/* 
+		回传.匹配 = [internalFormat, format, type]; 
+	*/
 	function WebGL内部格式与源格式匹配检测(内部格式, 源格式, 源类型, 基准, 回传) {
 
 		let 参数 = [];
@@ -3751,7 +3763,7 @@ var 图像处理 = (function () {
 			//[ 处理程序集.获取程序('查找边缘'),[ '待处理图像', 'Sobel' ] ],
 			//[ 处理程序集.获取程序('高斯模糊'),[ '待处理图像', 2 ] ], 
 			[处理程序集.获取程序('查找边缘'), ['待处理图像', 'Canny', true, 0.1, 0.5]],//Canny Scharr
-			//[处理程序集.获取程序('霍夫变换'), ['待处理图像']],
+			[处理程序集.获取程序('霍夫变换'), ['待处理图像']],
 			//[ 处理程序集.获取程序('查找边缘'),[ '待处理图像', 'Canny', true, 0.1, 0.4 ] ],
 			//[ 处理程序集.获取程序('反相'),[ '待处理图像' ] ], 
 			//[ 处理程序集.获取程序('查找边缘'),[ '待处理图像', 'Sobel' ] ],

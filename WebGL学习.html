@@ -7,7 +7,8 @@
 	<style id="全局样式">
 		body {
 			/* background-color: #DDDDDD; */
-			margin: 0px; /* white-space: nowrap; */
+			margin: 0px;
+			/* white-space: nowrap; */
 		}
 
 
@@ -31,12 +32,16 @@
 			/* box-sizing:border-box; */
 			border-width: 0px;
 			border-color: rgb(80, 80, 80);
-			border-style: solid; /* border-radius: 50%; */
-			background-color: rgba(180, 180, 180, 0.8);/*  opacity:0.8; */
-			position: absolute; /* left: 0px; */
+			border-style: solid;
+			/* border-radius: 50%; */
+			background-color: rgba(180, 180, 180, 0.8);
+			/*  opacity:0.8; */
+			position: absolute;
+			/* left: 0px; */
 			/* top: 0px; */
 			width: 100%;
-			height: 100%; /* z-index: 4; */
+			height: 100%;
+			/* z-index: 4; */
 		}
 
 		canvas#显示画布 {
@@ -91,7 +96,7 @@
 		var 上下文 = 画布.getContext('2d');
 		var img = new Image(), 待处理画布 = document.createElement('canvas');
 		var 待处理上下文 = 待处理画布.getContext('2d');
-		img.src = '图像处理/OlomoucClock_ZH-CN14494749598_1920x1080.jpg'; //跳一跳.png Mapleleaf_ZH-CN9491310356_1920x1080[1].jpg untitled.png Lena原图.png 1520822497288.jpg
+		img.src = '图像处理/线条1.png'; //跳一跳.png Mapleleaf_ZH-CN9491310356_1920x1080[1].jpg untitled.png Lena原图.png 1520822497288.jpg
 		//OlomoucClock_ZH-CN14494749598_1920x1080.jpg 线条.png 1085343-20170424223432225-596215935.png 细线1像素.png 多极测试.jpg
 		stats = new Stats();
 		状态.appendChild(stats.dom);
@@ -130,10 +135,7 @@
 					图像[l] = (数据[l]) / (Math.PI) * 255;
 
 				l++;
-				if (数据[l] < 0)
-					图像[l] = (数据[l] + Math.PI) / (Math.PI) * 255
-				else
-					图像[l] = (数据[l]) / (Math.PI) * 255;
+				图像[l] = 数据[l]*1.5 * 255;
 
 				l++;
 				图像[l] = 255;
@@ -141,6 +143,40 @@
 
 			return new ImageData(图像, 宽, 高);
 
+		}
+
+		function 霍夫查找图像数据(数据, 宽, 高) {
+
+			let 长度 = 数据.length / 4;
+			let 对角 = Math.sqrt(高*高+宽*宽);
+			let 截距 = new Array(Math.ceil(对角*2));
+			const 分度数 = 90;
+			const 分度 = 分度数/Math.PI;
+			for (let i = 0; i < 长度; i++) {
+				let l = i * 4;
+				if (数据[l]){
+					let 索引=Math.floor((数据[l+2]+1)*对角);
+					let 角度计数 = 截距[索引];
+					if (!角度计数){
+						角度计数 = new Int32Array(分度数);
+						截距[索引]=角度计数;
+					}
+					角度计数[Math.floor(数据[l+1]*分度)]+=1;
+				}
+			}
+
+			let 结果=[];
+			const 阈值=100;
+			for (let i = 0,li=截距.length; i < li; i++) {
+				let 角度计数 = 截距[i];
+				if (角度计数)
+					for (let j = 0,lj=角度计数.length; j < lj; j++) {
+						if (角度计数[j]>=阈值){
+							结果.push([j/分度,i-对角]);
+						}
+					}
+			}
+			return 结果;
 		}
 
 
@@ -174,6 +210,7 @@
 				setTimeout(() => {
 					let start = window.performance.now();
 					let 结果 = 获取图像('', true, false);
+					console.log(霍夫查找图像数据(结果, 待处理画布.width, 待处理画布.height));
 					结果 = 浮点数据到图像(结果, 待处理画布.width, 待处理画布.height);
 					if (结果 instanceof ImageData) {
 
@@ -188,9 +225,9 @@
 
 						线条.style.width = 结果.width + 'px';
 						线条.style.height = 结果.height + 'px';
-						
+
 						let start = window.performance.now();
-						结果=图像处理.高斯模糊(结果,10);
+						//结果=图像处理.高斯模糊(结果,10);
 						console.log(window.performance.now() - start, '结果=图像处理.高斯模糊(结果,2);');
 
 						上下文.putImageData(结果, 0, 0);
