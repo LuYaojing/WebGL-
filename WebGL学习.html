@@ -91,7 +91,7 @@
 		var 上下文 = 画布.getContext('2d');
 		var img = new Image(), 待处理画布 = document.createElement('canvas');
 		var 待处理上下文 = 待处理画布.getContext('2d');
-		img.src = '图像处理/Mapleleaf_ZH-CN9491310356_1920x1080[1].jpg'; //跳一跳.png Mapleleaf_ZH-CN9491310356_1920x1080[1].jpg untitled.png Lena原图.png 1520822497288.jpg
+		img.src = '图像处理/OlomoucClock_ZH-CN14494749598_1920x1080.jpg'; //跳一跳.png Mapleleaf_ZH-CN9491310356_1920x1080[1].jpg untitled.png Lena原图.png 1520822497288.jpg
 		//OlomoucClock_ZH-CN14494749598_1920x1080.jpg 线条.png 1085343-20170424223432225-596215935.png 细线1像素.png 多极测试.jpg
 		stats = new Stats();
 		状态.appendChild(stats.dom);
@@ -189,9 +189,9 @@
 						线条.style.width = 结果.width + 'px';
 						线条.style.height = 结果.height + 'px';
 						
-						//let start = window.performance.now();
-						//结果=图像处理.高斯模糊(结果,2);
-						//console.log(window.performance.now() - start, '结果=图像处理.高斯模糊(结果,2);');
+						let start = window.performance.now();
+						结果=图像处理.高斯模糊(结果,5);
+						console.log(window.performance.now() - start, '结果=图像处理.高斯模糊(结果,2);');
 
 						上下文.putImageData(结果, 0, 0);
 
